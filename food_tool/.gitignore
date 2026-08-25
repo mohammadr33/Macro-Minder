@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+food_tool.db
+.env
+venv/
+DECISIONS.md
