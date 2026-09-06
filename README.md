@@ -110,8 +110,3 @@ npm run dev
 - A few thresholds (Cutting/Muscle Building calorie limits, Diabetes sugar bonus) are reasoned heuristics, not backed by an official body — flagged in `goals.py`
 - SQLite history resets on Render redeploys (ephemeral filesystem on free tier)
 
----
-
-## Design Decisions
-
-Every threshold, data source, and architectural decision — including ones that were wrong and fixed after testing against real data — is documented in [`DECISIONS.md`](./DECISIONS.md).
