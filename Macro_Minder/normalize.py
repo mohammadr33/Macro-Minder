@@ -131,6 +131,21 @@ def from_usda(raw: dict) -> Food:
         carbs = values.get("carbs_g") or 0.0
         values["calories"] = round(values["protein_g"] * 4 + values["total_fat_g"] * 9 + carbs * 4, 1)
 
+    # Physical / Atwater macro consistency for zero-energy or zero-macro items
+    cal_check = values.get("calories")
+    if cal_check == 0 or (cal_check is not None and cal_check <= 0):
+        for f in ["total_fat_g", "saturated_fat_g", "carbs_g", "sugar_g", "protein_g", "fiber_g", "cholesterol_mg"]:
+            if values.get(f) is None:
+                values[f] = 0.0
+
+    if values.get("total_fat_g") == 0 and values.get("saturated_fat_g") is None:
+        values["saturated_fat_g"] = 0.0
+    if values.get("carbs_g") == 0:
+        if values.get("sugar_g") is None:
+            values["sugar_g"] = 0.0
+        if values.get("fiber_g") is None:
+            values["fiber_g"] = 0.0
+
     data_type = raw.get("dataType")
     food_category = raw.get("foodCategory") or ""
     description = raw.get("description") or ""
@@ -196,15 +211,20 @@ def from_usda(raw: dict) -> Food:
     elif any(w in desc_lower for w in [", raw", "raw,", "fresh "]):
         is_processed = False
     elif data_type == "Branded":
-        # Check single-ingredient whole grains/legumes/produce in description
-        is_whole_grain_desc = any(w in desc_lower for w in [
-            "brown rice", "rolled oats", "steel cut oats", "quinoa", "dry black beans", "dry lentils",
-            "walnuts", "almonds", "pecans", "pistachios", "chia seeds"
-        ])
-        if is_whole_grain_desc and not has_added_sugar_or_oil:
+        # Plain bottled water is not ultra-processed
+        is_plain_water = any(w in desc_lower for w in ["water", "spring water", "mineral water", "drinking water"]) or "water" in cat_lower
+        if is_plain_water and not has_added_sugar_or_oil:
             is_processed = False
         else:
-            is_processed = True
+            # Check single-ingredient whole grains/legumes/produce in description
+            is_whole_grain_desc = any(w in desc_lower for w in [
+                "brown rice", "rolled oats", "steel cut oats", "quinoa", "dry black beans", "dry lentils",
+                "walnuts", "almonds", "pecans", "pistachios", "chia seeds"
+            ])
+            if is_whole_grain_desc and not has_added_sugar_or_oil:
+                is_processed = False
+            else:
+                is_processed = True
     elif data_type in ("SR Legacy", "Foundation", "Survey (FNDDS)"):
         is_processed = False
     else:
@@ -273,19 +293,57 @@ def from_off(raw: dict) -> Food:
         cleaned = [tag.split(":", 1)[-1].replace("-", " ") for tag in categories_tags]
         food_category = ", ".join(cleaned)
 
+    calories = n.get("energy-kcal_100g")
+    total_fat = n.get("fat_100g")
+    sat_fat = n.get("saturated-fat_100g")
+    carbs = n.get("carbohydrates_100g")
+    sugar = n.get("sugars_100g")
+    fiber = n.get("fiber_100g")
+    protein = n.get("proteins_100g")
+    cholesterol = n.get("cholesterol_100g")
+
+    # Physical / Atwater macro consistency for zero-energy or zero-macro items
+    if calories == 0 or (calories is not None and calories <= 0):
+        if total_fat is None: total_fat = 0.0
+        if sat_fat is None: sat_fat = 0.0
+        if carbs is None: carbs = 0.0
+        if sugar is None: sugar = 0.0
+        if fiber is None: fiber = 0.0
+        if protein is None: protein = 0.0
+        if cholesterol is None: cholesterol = 0.0
+
+    if total_fat == 0 and sat_fat is None:
+        sat_fat = 0.0
+    if carbs == 0:
+        if sugar is None: sugar = 0.0
+        if fiber is None: fiber = 0.0
+
+    # Plain bottled / mineral / spring water is whole / minimally processed
+    is_water = False
+    if food_category:
+        cat_lower = food_category.lower()
+        if any(w in cat_lower for w in ["waters", "spring waters", "mineral waters"]):
+            is_water = True
+    prod_name = raw.get("product_name", "").lower()
+    if any(w in prod_name for w in ["spring water", "mineral water", "natural water", "eau minérale", "eau minerale", "bottled water"]):
+        is_water = True
+
+    if is_water and (sugar is None or sugar == 0) and (calories is None or calories == 0):
+        is_processed = False
+
     return Food(
         name=raw.get("product_name", "Unknown"),
         source="off",
         serving_size_g=raw.get("serving_quantity"),
-        calories=n.get("energy-kcal_100g"),
-        protein_g=n.get("proteins_100g"),
-        total_fat_g=n.get("fat_100g"),
-        saturated_fat_g=n.get("saturated-fat_100g"),
-        carbs_g=n.get("carbohydrates_100g"),
-        sugar_g=n.get("sugars_100g"),
-        fiber_g=n.get("fiber_100g"),
+        calories=calories,
+        protein_g=protein,
+        total_fat_g=total_fat,
+        saturated_fat_g=sat_fat,
+        carbs_g=carbs,
+        sugar_g=sugar,
+        fiber_g=fiber,
         sodium_mg=sodium_mg,
-        cholesterol_mg=n.get("cholesterol_100g"),  # present sometimes, worth trying
+        cholesterol_mg=cholesterol,  # present sometimes, worth trying
         is_processed=is_processed,
         food_category=food_category,
     )

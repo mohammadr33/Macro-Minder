@@ -144,7 +144,8 @@ _register(Goal(
              alt_pass_label="AHA heart-healthy lipid profile (unsaturated fat >= 2x saturated fat in whole foods / healthy fats)"),
         Rule(nutrient="fiber_g", comparison=Comparison.MIN,
              threshold=2.5,  # FDA "good source of fiber" claim
-             role=RuleRole.BONUS, label="Fiber"),
+             role=RuleRole.BONUS, label="Fiber",
+             applies_when=("calories", 30)),
     ],
 ))
 
@@ -180,7 +181,8 @@ _register(Goal(
              alt_pass_label="low energy density (<=150kcal/100g, per weight-management research)"),
         Rule(nutrient="protein_g", comparison=Comparison.MIN,
              threshold=5,  # FDA "good source of protein" claim, 10% DV
-             role=RuleRole.BONUS, label="Protein"),
+             role=RuleRole.BONUS, label="Protein",
+             applies_when=("calories", 30)),
     ],
 ))
 
@@ -209,7 +211,8 @@ _register(Goal(
              role=RuleRole.MODERATION, label="Sodium (Low-Sodium Target)"),
         Rule(nutrient="fiber_g", comparison=Comparison.MIN,
              threshold=2.5,  # FDA "good source of fiber" claim; DASH dietary component
-             role=RuleRole.BONUS, label="Fiber (DASH Component)"),
+             role=RuleRole.BONUS, label="Fiber (DASH Component)",
+             applies_when=("calories", 30)),
     ],
 ))
 
@@ -277,10 +280,12 @@ _register(Goal(
              threshold=10,  # FDA "excellent source of protein" claim, 20% DV
              role=RuleRole.BLOCKING, label="Protein",
              alt_pass_check=_protein_meets_energy_density,
-             alt_pass_label="EU 'source of protein' standard (>=12% of calories from protein)"),
+             alt_pass_label="EU 'source of protein' standard (>=12% of calories from protein)",
+             applies_when=("calories", 30)),
         Rule(nutrient="calories", comparison=Comparison.MIN,
              threshold=200,  # heuristic, reasoned above
-             role=RuleRole.BONUS, label="Calories"),
+             role=RuleRole.BONUS, label="Calories",
+             applies_when=("calories", 30)),
     ],
 ))
 
