@@ -264,7 +264,7 @@ function App() {
         <span className="brand">MacroMinder</span>
         <a
           className="repo-link"
-          href="https://github.com/"
+          href="https://github.com/mohammadr33/Macro-Minder"
           target="_blank"
           rel="noreferrer"
         >
@@ -278,6 +278,10 @@ function App() {
           Search a product or scan a barcode. Pick a goal. Get a straight
           answer with the reasons behind it — not just yes or no.
         </p>
+        <div className="demo-notice" role="note">
+          <span className="demo-badge">Portfolio Demo</span>
+          <span className="demo-notice-text">Real data, real rule engine — built as a portfolio project. Not a medical tool.</span>
+        </div>
       </section>
 
       <section className="demo" aria-label="Demo">
@@ -458,9 +462,8 @@ function App() {
 
         {evaluation && (
           <div
-            className={`verdict-panel tier-${
-              evaluation.combined_tier || evaluation.results[0].tier
-            }`}
+            className={`verdict-panel tier-${evaluation.combined_tier || evaluation.results[0].tier
+              }`}
           >
             {evaluation.results.length > 1 ? (
               <>
@@ -670,7 +673,13 @@ function App() {
       </section>
 
       <footer className="footer">
-        <p>Built with Python, FastAPI, React. Not medical advice.</p>
+        <p>
+          Built with Python · FastAPI · React · Gemini AI ·{' '}
+          <a href="https://github.com/mohammadr33/Macro-Minder" target="_blank" rel="noreferrer">Source on GitHub</a>
+        </p>
+        <p className="footer-demo-note">
+          This is a <strong>portfolio demo project</strong>. Verdicts are based on public health guidelines (AHA, ADA, FDA) and are for informational purposes only — not medical advice.
+        </p>
       </footer>
     </div>
   )
