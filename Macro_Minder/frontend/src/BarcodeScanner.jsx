@@ -265,11 +265,13 @@ export default function BarcodeScanner({ onScan, onClose }) {
 
         <div className="scanner-modal-footer">
           <div className="scanner-tip-card">
-            <strong>💡 Scanning Tips:</strong>
+            <div className="scanner-focus-alert">
+              ⚠️ <strong>Camera blurry?</strong> A known browser autofocus issue can affect some cameras. If it won't scan, snap a picture with your phone and use <strong>Upload Barcode Photo</strong> below!
+            </div>
+            <strong>💡 Quick Tips:</strong>
             <ul>
-              <li><strong>Focus distance:</strong> Hold package <strong>8–10 inches away</strong> (too close blurs the lens).</li>
-              <li><strong>Lighting:</strong> Avoid glare or reflections across the barcode bars.</li>
-              <li><strong>Orientation:</strong> Hold barcode horizontally inside the laser zone.</li>
+              <li><strong>Distance:</strong> Hold package <strong>8–10 inches away</strong> (too close blurs the lens).</li>
+              <li><strong>Lighting:</strong> Avoid bright glare across the barcode bars.</li>
             </ul>
           </div>
 

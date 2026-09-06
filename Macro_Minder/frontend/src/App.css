@@ -1328,3 +1328,164 @@ a:focus-visible {
 .scanner-cancel-action:hover {
   color: white !important;
 }
+
+/* Barcode Camera Notice Card */
+.barcode-notice-card {
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.barcode-notice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.barcode-notice-badge {
+  background: #d97706;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.barcode-notice-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: color-mix(in srgb, #b45309 85%, var(--ink));
+}
+
+.barcode-notice-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.barcode-notice-text strong {
+  font-weight: 600;
+}
+
+/* Focus alert inside scanner modal */
+.scanner-focus-alert {
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #fef08a;
+  line-height: 1.4;
+}
+
+/* Community & Feedback Card */
+.community-card {
+  margin-top: 36px;
+  padding: 26px 28px;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: 14px;
+  text-align: left;
+}
+
+.community-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.community-badge {
+  align-self: flex-start;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.community-card h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.community-description {
+  margin: 0 0 20px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 64ch;
+}
+
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.community-box {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--bg, #fff) 85%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.community-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.community-box h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.community-box p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+.community-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.community-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--accent);
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.community-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}

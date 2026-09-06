@@ -18,6 +18,7 @@ venv/
 node_modules/
 dist/
 .vite/
+*.timestamp-*.mjs
 
 # Editor
 .vscode/

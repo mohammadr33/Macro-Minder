@@ -326,6 +326,16 @@ function App() {
           </div>
         ) : (
           <div className="barcode-input-section">
+            <div className="barcode-notice-card" role="note">
+              <div className="barcode-notice-header">
+                <span className="barcode-notice-badge">Camera Notice</span>
+                <span className="barcode-notice-sub">Autofocus issue (Work in progress)</span>
+              </div>
+              <p className="barcode-notice-text">
+                Live webcam and browser autofocus may struggle to focus cleanly on some barcodes. If your item isn't scanning, <strong>take a picture of the barcode with your phone</strong> and use the <strong>“Upload Barcode Photo”</strong> option inside the scanner, or type the barcode numbers directly below.
+              </p>
+            </div>
+
             <div className="barcode-camera-trigger">
               <button
                 type="button"
@@ -670,15 +680,54 @@ function App() {
           trying to do — not a full meal planner, just a straight answer on
           one item at a time.
         </p>
+
+        <div className="community-card">
+          <div className="community-card-header">
+            <span className="community-badge">Community & Feedback</span>
+            <h2>Help Shape MacroMinder</h2>
+          </div>
+          <p className="community-description">
+            Nutritional science and grocery databases are vast and complex. While our rules are modeled on established public health guidelines (AHA, ADA, FDA), <strong>the schema and threshold logic may not be perfect</strong> for every single food item or dietary need.
+          </p>
+          <div className="community-grid">
+            <div className="community-box">
+              <span className="community-icon" aria-hidden="true">💬</span>
+              <div>
+                <h4>Share Schema Insights</h4>
+                <p>Noticed a rule evaluation or nutrient threshold that looks inaccurate? Share your feedback to help us refine the rule engine.</p>
+              </div>
+            </div>
+            <div className="community-box">
+              <span className="community-icon" aria-hidden="true">💡</span>
+              <div>
+                <h4>Suggest New Features</h4>
+                <p>Have an idea for meal-level tracking, portion detection, new goal profiles, or scanner improvements? We’d love to hear your ideas!</p>
+              </div>
+            </div>
+          </div>
+          <div className="community-cta">
+            <a
+              href="https://github.com/mohammadr33/Macro-Minder/discussions"
+              target="_blank"
+              rel="noreferrer"
+              className="community-btn-primary"
+            >
+              <span>Join GitHub Discussions</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        </div>
       </section>
 
       <footer className="footer">
         <p>
           Built with Python · FastAPI · React · Gemini AI ·{' '}
           <a href="https://github.com/mohammadr33/Macro-Minder" target="_blank" rel="noreferrer">Source on GitHub</a>
+          {' · '}
+          <a href="https://github.com/mohammadr33/Macro-Minder/discussions" target="_blank" rel="noreferrer">Discussions</a>
         </p>
         <p className="footer-demo-note">
-          This is a <strong>portfolio demo project</strong>. Verdicts are based on public health guidelines (AHA, ADA, FDA) and are for informational purposes only — not medical advice.
+          This is a <strong>portfolio demo project</strong>. Verdicts are based on public health guidelines (AHA, ADA, FDA) and schemas may not be perfect. Have ideas or insights? Feel free to share in our <a href="https://github.com/mohammadr33/Macro-Minder/discussions" target="_blank" rel="noreferrer">GitHub Discussions</a>.
         </p>
       </footer>
     </div>
