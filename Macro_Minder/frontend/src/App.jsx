@@ -278,10 +278,6 @@ function App() {
           Search a product or scan a barcode. Pick a goal. Get a straight
           answer with the reasons behind it — not just yes or no.
         </p>
-        <div className="demo-notice" role="note">
-          <span className="demo-badge">Portfolio Demo</span>
-          <span className="demo-notice-text">Real data, real rule engine — built as a portfolio project. Not a medical tool.</span>
-        </div>
       </section>
 
       <section className="demo" aria-label="Demo">
@@ -727,7 +723,7 @@ function App() {
           <a href="https://github.com/mohammadr33/Macro-Minder/discussions" target="_blank" rel="noreferrer">Discussions</a>
         </p>
         <p className="footer-demo-note">
-          This is a <strong>portfolio demo project</strong>. Verdicts are based on public health guidelines (AHA, ADA, FDA) and schemas may not be perfect. Have ideas or insights? Feel free to share in our <a href="https://github.com/mohammadr33/Macro-Minder/discussions" target="_blank" rel="noreferrer">GitHub Discussions</a>.
+          A solo developer personal project. Verdicts are based on public health guidelines (AHA, ADA, FDA) and schemas may not be perfect. Have ideas or insights? Feel free to share in our <a href="https://github.com/mohammadr33/Macro-Minder/discussions" target="_blank" rel="noreferrer">GitHub Discussions</a>.
         </p>
       </footer>
     </div>
