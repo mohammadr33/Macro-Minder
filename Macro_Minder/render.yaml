@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: macro-minder-api
+    runtime: python
+    region: ohio
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: USDA_API_KEY
+        sync: false          # Set manually in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false          # Set manually in Render dashboard
+      - key: PYTHON_VERSION
+        value: 3.11.0

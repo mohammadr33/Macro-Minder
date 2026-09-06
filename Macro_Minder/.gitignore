@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+food_tool.db
+.env
+venv/
+.venv/
+node_modules/
+dist/
+DECISIONS.md
+tests/
