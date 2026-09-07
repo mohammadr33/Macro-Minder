@@ -13,11 +13,21 @@ export default function BarcodeScanner({ onScan, onClose }) {
   const [fileError, setFileError] = useState(null)
   const [focusRing, setFocusRing] = useState(null)
 
+  // Camera app features
+  const [zoomCap, setZoomCap] = useState(null) // { min, max, step }
+  const [zoomLevel, setZoomLevel] = useState(1)
+  const [hasTorch, setHasTorch] = useState(false)
+  const [isTorchOn, setIsTorchOn] = useState(false)
+  const [isShutterFlashing, setIsShutterFlashing] = useState(false)
+
   const videoRef = useRef(null)
   const readerRef = useRef(null)
   const isHandlingScanRef = useRef(false)
+  const streamRef = useRef(null)
+  const nativeScanIntervalRef = useRef(null)
   const fileInputRef = useRef(null)
-  const controlsRef = useRef(null)   // holds the ZXing stream controls object
+  const cameraAppInputRef = useRef(null)
+  const controlsRef = useRef(null)
 
   // Build hints once
   const hints = new Map()
@@ -35,13 +45,21 @@ export default function BarcodeScanner({ onScan, onClose }) {
   hints.set(DecodeHintType.TRY_HARDER, true)
 
   const stopCamera = () => {
+    if (nativeScanIntervalRef.current) {
+      clearInterval(nativeScanIntervalRef.current)
+      nativeScanIntervalRef.current = null
+    }
+
     try {
       controlsRef.current?.stop()
     } catch {}
     controlsRef.current = null
 
-    // Belt-and-suspenders: kill raw tracks on the video element too
     try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => { try { t.stop() } catch {} })
+        streamRef.current = null
+      }
       const stream = videoRef.current?.srcObject
       if (stream) {
         stream.getTracks().forEach((t) => { try { t.stop() } catch {} })
@@ -62,6 +80,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
     onScan(text)
   }
 
+  // Tap-to-focus on viewfinder
   const handleViewportClick = (e) => {
     try {
       const rect = e.currentTarget?.getBoundingClientRect()
@@ -80,7 +99,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
       }, 1200)
 
       // Hardware camera autofocus adjustment (strictly guarded)
-      const stream = videoRef.current?.srcObject
+      const stream = streamRef.current || videoRef.current?.srcObject
       if (stream && typeof stream.getVideoTracks === 'function') {
         const tracks = stream.getVideoTracks()
         if (tracks && tracks.length > 0) {
@@ -122,6 +141,80 @@ export default function BarcodeScanner({ onScan, onClose }) {
     } catch {}
   }
 
+  // Quick Zoom toggle (1x / 2x)
+  const handleZoomToggle = (e) => {
+    e?.stopPropagation()
+    const stream = streamRef.current || videoRef.current?.srcObject
+    const track = stream?.getVideoTracks?.()[0]
+    if (!track || !zoomCap) return
+
+    const targetZoom = zoomLevel === 1 ? Math.min(2, zoomCap.max) : 1
+    track.applyConstraints({ advanced: [{ zoom: targetZoom }] })
+      .then(() => setZoomLevel(targetZoom))
+      .catch(() => {})
+  }
+
+  // Torch / Flash toggle
+  const handleTorchToggle = (e) => {
+    e?.stopPropagation()
+    const stream = streamRef.current || videoRef.current?.srcObject
+    const track = stream?.getVideoTracks?.()[0]
+    if (!track) return
+
+    const nextTorch = !isTorchOn
+    track.applyConstraints({ advanced: [{ torch: nextTorch }] })
+      .then(() => setIsTorchOn(nextTorch))
+      .catch(() => {})
+  }
+
+  // Shutter Snap from live video
+  const handleShutterSnap = async () => {
+    if (isHandlingScanRef.current || isFileScanning) return
+    const video = videoRef.current
+    if (!video || video.readyState < 2) return
+
+    setIsShutterFlashing(true)
+    setTimeout(() => setIsShutterFlashing(false), 240)
+    setFileError(null)
+
+    try {
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth || 1280
+      canvas.height = video.videoHeight || 720
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+      // 1. Check native BarcodeDetector on canvas snapshot
+      if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+        try {
+          const detector = new window.BarcodeDetector({
+            formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'itf', 'qr_code'],
+          })
+          const barcodes = await detector.detect(canvas)
+          if (barcodes.length > 0 && barcodes[0].rawValue) {
+            handleSuccess(barcodes[0].rawValue)
+            return
+          }
+        } catch {}
+      }
+
+      // 2. Check ZXing decode from canvas data URL
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95)
+      const reader = new BrowserMultiFormatReader(hints)
+      try {
+        const result = await reader.decodeFromImageUrl(dataUrl)
+        if (result) {
+          handleSuccess(result.getText())
+          return
+        }
+      } catch {}
+
+      setFileError('Could not read barcode in that snapshot. Try 2x Zoom, hold 8–10 in. away, or use "Phone Camera App" below!')
+    } catch (err) {
+      console.error('Shutter frame capture failed:', err)
+    }
+  }
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') handleClose()
@@ -136,43 +229,127 @@ export default function BarcodeScanner({ onScan, onClose }) {
     async function startScanner() {
       try {
         const reader = new BrowserMultiFormatReader(hints, {
-          delayBetweenScanAttempts: 50,
+          delayBetweenScanAttempts: 40,
           delayBetweenScanSuccess: 500,
         })
         readerRef.current = reader
 
-        // Enumerate cameras; prefer back-facing on mobile
-        const devices = await BrowserMultiFormatReader.listVideoInputDevices()
-        let deviceId = undefined
-        if (devices.length > 0) {
-          // Pick back camera if label suggests it; otherwise undefined = browser default
-          const back = devices.find((d) =>
-            /back|rear|environment/i.test(d.label)
-          )
-          deviceId = back?.deviceId ?? devices[0].deviceId
+        // Request high-res stream with continuous autofocus
+        let stream = null
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1920, min: 1280 },
+              height: { ideal: 1080, min: 720 },
+              advanced: [{ focusMode: 'continuous' }],
+            },
+            audio: false,
+          })
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+              },
+              audio: false,
+            })
+          } catch {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: { ideal: 'environment' } },
+              audio: false,
+            })
+          }
         }
 
-        const controls = await reader.decodeFromVideoDevice(
-          deviceId,
-          videoRef.current,
-          (result, err, ctrl) => {
-            if (!mounted) return
-            if (result) {
-              handleSuccess(result.getText())
-            }
-            // NotFoundException is thrown every frame when no barcode found — ignore silently
-            if (err && !(err instanceof NotFoundException)) {
-              console.warn('ZXing scan error:', err)
-            }
-          }
-        )
-
         if (!mounted) {
-          controls.stop()
+          stream.getTracks().forEach((t) => t.stop())
           return
         }
 
-        controlsRef.current = controls
+        streamRef.current = stream
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.setAttribute('playsinline', 'true')
+          videoRef.current.setAttribute('muted', 'true')
+          await videoRef.current.play()
+        }
+
+        const track = stream.getVideoTracks()[0]
+        if (track) {
+          try {
+            const caps = typeof track.getCapabilities === 'function' ? track.getCapabilities() : {}
+            // Continuous autofocus
+            if (caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+              track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {})
+            }
+            // Zoom support
+            if (caps.zoom && caps.zoom.max > 1) {
+              setZoomCap({ min: caps.zoom.min || 1, max: caps.zoom.max || 1, step: caps.zoom.step || 0.1 })
+            }
+            // Torch support
+            if (caps.torch) {
+              setHasTorch(true)
+            }
+          } catch {}
+        }
+
+        // 1. Android Native BarcodeDetector loop (hardware MLKit accelerated)
+        if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
+          try {
+            const detector = new window.BarcodeDetector({
+              formats: ['upc_a', 'upc_e', 'ean_13', 'ean_8', 'code_128', 'code_39', 'itf', 'qr_code'],
+            })
+
+            let isDetecting = false
+            const interval = setInterval(async () => {
+              if (!mounted || isHandlingScanRef.current || isDetecting) return
+              const video = videoRef.current
+              if (!video || video.readyState < 2 || video.videoWidth === 0) return
+
+              isDetecting = true
+              try {
+                const barcodes = await detector.detect(video)
+                if (barcodes.length > 0 && barcodes[0].rawValue) {
+                  clearInterval(interval)
+                  handleSuccess(barcodes[0].rawValue)
+                }
+              } catch {
+                // frame detection errors are silent
+              } finally {
+                isDetecting = false
+              }
+            }, 80)
+
+            nativeScanIntervalRef.current = interval
+          } catch {}
+        }
+
+        // 2. ZXing scanner fallback (essential for iOS Safari / desktop Firefox)
+        if (videoRef.current) {
+          const controls = await reader.decodeFromVideoElement(
+            videoRef.current,
+            (result, err) => {
+              if (!mounted) return
+              if (result) {
+                handleSuccess(result.getText())
+              }
+              if (err && !(err instanceof NotFoundException)) {
+                console.warn('ZXing scan warning:', err)
+              }
+            }
+          )
+
+          if (!mounted) {
+            controls?.stop()
+            return
+          }
+          controlsRef.current = controls
+        }
+
         setIsStarting(false)
       } catch (err) {
         if (!mounted) return
@@ -183,7 +360,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
         } else if (err?.name === 'NotFoundError' || msg.includes('NotFound')) {
           setError('No camera found on this device.')
         } else {
-          setError('Unable to access camera. You can still upload a photo of the barcode below.')
+          setError('Unable to access live camera stream. You can still snap or upload a photo using your phone camera below.')
         }
       }
     }
@@ -198,7 +375,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
 
   // ─── Image / file upload decoder ──────────────────────────────────────────
   async function decodeBarcodeFromFile(file) {
-    // 1. Native BarcodeDetector (Chrome/Edge) — fastest, most reliable
+    // 1. Native BarcodeDetector (Chrome/Android MLKit) — fastest, most reliable
     if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
       try {
         const detector = new window.BarcodeDetector({
@@ -212,7 +389,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
       } catch {}
     }
 
-    // 2. ZXing @zxing/browser decodeFromImageUrl — clean ESM, no UMD issues
+    // 2. ZXing @zxing/browser decodeFromImageUrl
     const reader = new BrowserMultiFormatReader(hints)
     const url = URL.createObjectURL(file)
 
@@ -267,10 +444,11 @@ export default function BarcodeScanner({ onScan, onClose }) {
       onScan(text)
     } catch (err) {
       console.error('Barcode upload failed:', err)
-      setFileError('Could not detect a barcode in that image. Try a sharper, closer photo or enter the number below.')
+      setFileError('Could not detect a barcode in that photo. Make sure the barcode is well-lit and clear, or enter the number below.')
     } finally {
       setIsFileScanning(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
+      if (cameraAppInputRef.current) cameraAppInputRef.current.value = ''
     }
   }
 
@@ -280,16 +458,17 @@ export default function BarcodeScanner({ onScan, onClose }) {
       className="scanner-modal-backdrop"
       role="dialog"
       aria-modal="true"
-      aria-label="Barcode Camera Scanner"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) handleClose()
-      }}
+      aria-label="Scan food product barcode"
+      onClick={handleClose}
     >
-      <div className="scanner-modal-card">
+      <div
+        className="scanner-modal-card"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="scanner-modal-header">
-          <div className="scanner-title-row">
-            <span className="scanner-pulse-dot" aria-hidden="true" />
-            <h3>Scan Product Barcode</h3>
+          <div className="scanner-header-title-row">
+            <span className="scanner-live-dot" aria-hidden="true" />
+            <span className="scanner-modal-title">Live Barcode Scanner</span>
           </div>
           <button
             type="button"
@@ -307,7 +486,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
           style={{ cursor: 'crosshair' }}
           title="Tap screen to focus"
         >
-          {/* @zxing/browser drives this <video> element directly */}
+          {/* Video feed */}
           <video
             ref={videoRef}
             className="scanner-video-el"
@@ -315,6 +494,33 @@ export default function BarcodeScanner({ onScan, onClose }) {
             playsInline
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
+
+          {/* Shutter flash effect */}
+          {isShutterFlashing && <div className="scanner-shutter-flash" />}
+
+          {/* Quick Camera Controls Bar (Pills in top corner) */}
+          <div className="scanner-viewport-controls">
+            {zoomCap && (
+              <button
+                type="button"
+                className={`scanner-ctrl-pill ${zoomLevel > 1 ? 'active' : ''}`}
+                onClick={handleZoomToggle}
+                title="Toggle 1x or 2x Zoom"
+              >
+                {zoomLevel === 1 ? '1x' : '2x'}
+              </button>
+            )}
+            {hasTorch && (
+              <button
+                type="button"
+                className={`scanner-ctrl-pill ${isTorchOn ? 'active' : ''}`}
+                onClick={handleTorchToggle}
+                title="Toggle Torch / Flashlight"
+              >
+                {isTorchOn ? '🔦 ON' : '🔦 OFF'}
+              </button>
+            )}
+          </div>
 
           {/* Animated Tap-to-Focus Target Box */}
           {focusRing && (
@@ -340,14 +546,14 @@ export default function BarcodeScanner({ onScan, onClose }) {
           {isStarting && (
             <div className="scanner-status-overlay">
               <div className="scanner-spinner" />
-              <p>Activating camera…</p>
+              <p>Activating HD camera…</p>
             </div>
           )}
 
           {isFileScanning && (
             <div className="scanner-status-overlay">
               <div className="scanner-spinner" />
-              <p>Analyzing barcode image…</p>
+              <p>Analyzing barcode with native engine…</p>
             </div>
           )}
 
@@ -371,29 +577,71 @@ export default function BarcodeScanner({ onScan, onClose }) {
           )}
         </div>
 
+        {/* Shutter capture button bar (one-to-one with camera app) */}
+        {!isStarting && !error && (
+          <div className="scanner-shutter-bar">
+            <button
+              type="button"
+              className="scanner-shutter-btn"
+              onClick={handleShutterSnap}
+              title="Snap & Scan current frame"
+              aria-label="Snap current barcode frame"
+            >
+              <div className="shutter-inner" />
+            </button>
+            <span className="scanner-shutter-label">📸 Tap to snap current frame</span>
+          </div>
+        )}
+
         <div className="scanner-modal-footer">
           {fileError && <p className="scanner-file-error" role="alert">{fileError}</p>}
 
-          <div className="scanner-actions-grid">
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              style={{ display: 'none' }}
-              onChange={handleFileUpload}
-            />
+          {/* Hidden inputs: 1 for direct native camera app, 1 for gallery upload */}
+          <input
+            type="file"
+            ref={cameraAppInputRef}
+            accept="image/*"
+            capture="environment"
+            style={{ display: 'none' }}
+            onChange={handleFileUpload}
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleFileUpload}
+          />
+
+          <div className="scanner-actions-grid-v2">
             <button
               type="button"
-              className="scanner-upload-btn"
-              onClick={() => fileInputRef.current?.click()}
+              className="scanner-action-btn primary-cam-btn"
+              onClick={() => cameraAppInputRef.current?.click()}
               disabled={isFileScanning}
+              title="Opens your device's native camera app"
             >
-              <span className="scanner-upload-icon" aria-hidden="true">📷</span>
-              <div className="scanner-upload-labels">
-                <strong>Upload / Take Photo</strong>
-                <span className="scanner-upload-hint">Uses native autofocus</span>
+              <span className="scanner-action-icon" aria-hidden="true">📱</span>
+              <div className="scanner-action-text">
+                <strong>Phone Camera App</strong>
+                <span className="scanner-action-sub">Full autofocus & macro</span>
               </div>
             </button>
+
+            <button
+              type="button"
+              className="scanner-action-btn gallery-btn"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isFileScanning}
+              title="Choose a photo from your gallery"
+            >
+              <span className="scanner-action-icon" aria-hidden="true">🖼️</span>
+              <div className="scanner-action-text">
+                <strong>Photo Gallery</strong>
+                <span className="scanner-action-sub">Upload existing image</span>
+              </div>
+            </button>
+
             <button
               type="button"
               className="scanner-cancel-btn"
@@ -405,7 +653,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
 
           <div className="scanner-tip-card">
             <div className="scanner-focus-alert">
-              ⚠️ <strong>Blurry live camera?</strong> Live browser autofocus can struggle on close objects. Hold the item <strong>8–10 inches away</strong> or tap <strong>Upload / Take Photo</strong> above!
+              💡 <strong>Close-up blur on Android?</strong> Hold phone <strong>8–10 in. away</strong> &amp; tap <strong>2x</strong> zoom above, or use <strong>Phone Camera App</strong> for native macro autofocus!
             </div>
           </div>
         </div>

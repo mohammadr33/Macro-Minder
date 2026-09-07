@@ -1350,71 +1350,173 @@ a:focus-visible {
   text-align: center;
 }
 
-.scanner-actions-grid {
+.scanner-viewport-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 22;
+}
+
+.scanner-ctrl-pill {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.02em;
+}
+
+.scanner-ctrl-pill:hover,
+.scanner-ctrl-pill.active {
+  background: #2ecc71;
+  color: #0b1f13;
+  border-color: #2ecc71;
+  transform: scale(1.05);
+}
+
+.scanner-shutter-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.88);
+  z-index: 30;
+  pointer-events: none;
+  animation: shutterFlashAnim 0.24s ease-out forwards;
+}
+
+@keyframes shutterFlashAnim {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.scanner-shutter-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px 6px 16px;
+  background: #111417;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scanner-shutter-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: transparent;
+  border: 3.5px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  padding: 0;
+}
+
+.scanner-shutter-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+}
+
+.scanner-shutter-btn:active {
+  transform: scale(0.92);
+}
+
+.shutter-inner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: background 0.15s ease;
+}
+
+.scanner-shutter-btn:active .shutter-inner {
+  background: #2ecc71;
+}
+
+.scanner-shutter-label {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.scanner-actions-grid-v2 {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr 1fr auto;
   gap: 10px;
   width: 100%;
 }
 
-.scanner-upload-btn {
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.22) 0%, rgba(39, 174, 96, 0.32) 100%);
-  border: 1.5px solid #2ecc71;
-  color: #e8fdf0;
+.scanner-action-btn {
+  padding: 10px 14px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-align: left;
 }
 
-.scanner-upload-btn:hover {
+.scanner-action-btn.primary-cam-btn {
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.22) 0%, rgba(39, 174, 96, 0.32) 100%);
+  border: 1.5px solid #2ecc71;
+  color: #e8fdf0;
+}
+
+.scanner-action-btn.primary-cam-btn:hover {
   background: linear-gradient(135deg, rgba(46, 204, 113, 0.32) 0%, rgba(39, 174, 96, 0.42) 100%);
   border-color: #48e289;
   transform: translateY(-1px);
 }
 
-.scanner-upload-btn:active {
-  transform: translateY(0);
+.scanner-action-btn.gallery-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
-.scanner-upload-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.scanner-action-btn.gallery-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
 }
 
-.scanner-upload-icon {
-  font-size: 22px;
+.scanner-action-icon {
+  font-size: 20px;
   flex-shrink: 0;
 }
 
-.scanner-upload-labels {
+.scanner-action-text {
   display: flex;
   flex-direction: column;
   line-height: 1.25;
 }
 
-.scanner-upload-labels strong {
-  font-size: 13.5px;
+.scanner-action-text strong {
+  font-size: 13px;
   color: #ffffff;
   font-weight: 600;
 }
 
-.scanner-upload-hint {
-  font-size: 11px;
+.scanner-action-sub {
+  font-size: 10.5px;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .scanner-cancel-btn {
-  padding: 12px 18px;
+  padding: 10px 16px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #e2e8f0;
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: 13px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1783,14 +1885,28 @@ a:focus-visible {
     height: 125px;
   }
 
-  .scanner-actions-grid {
+  .scanner-actions-grid-v2 {
     grid-template-columns: 1fr;
     gap: 8px;
   }
 
-  .scanner-upload-btn {
-    padding: 12px 14px;
-    min-height: 48px;
+  .scanner-action-btn {
+    min-height: 46px;
+    padding: 10px 14px;
+  }
+
+  .scanner-shutter-bar {
+    padding: 8px 12px 4px 12px;
+  }
+
+  .scanner-shutter-btn {
+    width: 52px;
+    height: 52px;
+  }
+
+  .shutter-inner {
+    width: 40px;
+    height: 40px;
   }
 
   .scanner-cancel-btn {
