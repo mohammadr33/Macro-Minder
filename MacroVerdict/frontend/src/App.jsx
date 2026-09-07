@@ -740,36 +740,18 @@ function App() {
       </section>
 
       <footer className="footer">
-        <div className="footer-main">
-          <div className="footer-brand-col">
-            <span className="footer-brand-name">MacroVerdict</span>
-            <span className="footer-tagline">Nutrition & Macro Decision Engine</span>
-          </div>
-          <div className="footer-links-col">
-            <a href="https://github.com/mohammadr33/MacroVerdict" target="_blank" rel="noreferrer" className="footer-link">
-              GitHub Source
-            </a>
-            <span className="footer-sep" aria-hidden="true">·</span>
-            <a href="https://github.com/mohammadr33/MacroVerdict/discussions" target="_blank" rel="noreferrer" className="footer-link">
-              Discussions
-            </a>
-          </div>
-        </div>
-
-        <div className="footer-disclaimer-card">
-          <div className="footer-disclaimer-badge-row">
-            <span className="footer-badge">Informational Only</span>
-            <span className="footer-badge-secondary">Not Medical Advice</span>
-          </div>
-          <p className="footer-disclaimer-text">
-            MacroVerdict evaluates nutritional metrics against public health standards (AHA, ADA, FDA) for general decision-support. It does not provide medical, diagnostic, or clinical dietary advice. Always consult a qualified physician or registered dietitian before changing your diet.
-          </p>
-          <div className="footer-meta-row">
-            <span>A solo developer personal project</span>
-            <span className="footer-sep" aria-hidden="true">·</span>
-            <span>FastAPI · React · Gemini AI</span>
-          </div>
-        </div>
+        <p>
+          Built with Python · FastAPI · React · Gemini AI ·{' '}
+          <a href="https://github.com/mohammadr33/MacroVerdict" target="_blank" rel="noreferrer">Source on GitHub</a>
+          {' · '}
+          <a href="https://github.com/mohammadr33/MacroVerdict/discussions" target="_blank" rel="noreferrer">Discussions</a>
+        </p>
+        <p className="footer-demo-note">
+          Not medical advice — for informational purposes only.
+        </p>
+        <p className="footer-demo-note">
+          A solo developer personal project. Verdicts are based on public health guidelines (AHA, ADA, FDA) and schemas may not be perfect. Have ideas or insights? Feel free to share in our <a href="https://github.com/mohammadr33/MacroVerdict/discussions" target="_blank" rel="noreferrer">GitHub Discussions</a>.
+        </p>
       </footer>
     </div>
   )

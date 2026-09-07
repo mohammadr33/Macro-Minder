@@ -875,118 +875,21 @@ a:focus-visible {
 
 /* Footer */
 .footer {
-  margin-top: 48px;
   border-top: 1px solid var(--line);
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.footer-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.footer-brand-col {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.footer-brand-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--ink);
-}
-
-.footer-tagline {
+  padding-top: 20px;
   font-size: 13px;
   color: var(--ink-soft);
 }
 
-.footer-links-col {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.footer-link {
+.footer a {
   color: var(--ink-soft);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  transition: color 0.15s;
-}
-
-.footer-link:hover {
-  color: var(--brand);
   text-decoration: underline;
 }
 
-.footer-sep {
-  color: var(--line);
+.footer-demo-note {
+  margin-top: 6px;
   font-size: 12px;
-}
-
-.footer-disclaimer-card {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  text-align: left;
-}
-
-.footer-disclaimer-badge-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.footer-badge {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  background: #e5e7eb;
-  color: #374151;
-  padding: 2px 7px;
-  border-radius: 999px;
-}
-
-.footer-badge-secondary {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  background: #fef3c7;
-  color: #92400e;
-  padding: 2px 7px;
-  border-radius: 999px;
-}
-
-.footer-disclaimer-text {
-  margin: 0;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--ink-soft);
-}
-
-.footer-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  color: var(--ink-soft);
-  opacity: 0.8;
-  flex-wrap: wrap;
+  opacity: 0.7;
 }
 
 
@@ -1812,13 +1715,6 @@ a:focus-visible {
 
   .scanner-modal-footer {
     padding: 12px 14px;
-    gap: 10px;
-  }
-
-  /* Footer on mobile */
-  .footer-main {
-    flex-direction: column;
-    align-items: flex-start;
     gap: 10px;
   }
 
