@@ -248,7 +248,7 @@ function App() {
     const code = (typeof codeToLookup === 'string' ? codeToLookup : barcode).trim()
     if (!code) return
     setBarcode(code)
-    setIsScannerOpen(false)
+    setIsCameraActive(false)
     setLoading(true)
     setError('')
     try {
