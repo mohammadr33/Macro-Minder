@@ -281,6 +281,13 @@ function App() {
       </section>
 
       <section className="demo" aria-label="Demo">
+        <div className="server-notice" role="note">
+          <span className="server-notice-icon">⏱️</span>
+          <div className="server-notice-content">
+            <strong>Server Spin-Up Notice:</strong> MacroVerdict runs on Render’s free tier, which puts the server to sleep after periods of inactivity. If the app hasn’t been used in a while, your first search or barcode lookup may take <strong>around 30 seconds</strong> to wake up. Once awake, all requests are fast!
+          </div>
+        </div>
+
         <div className="mode-toggle" role="tablist">
           <button
             role="tab"
@@ -367,6 +374,13 @@ function App() {
                 {loading ? 'Looking up…' : 'Look up'}
               </button>
             </div>
+          </div>
+        )}
+
+        {loading && (
+          <div className="server-loading-status" role="status" aria-live="polite">
+            <span className="spinner-inline" />
+            <span>Connecting to database… (If backend is waking up from idle, this may take ~30 seconds)</span>
           </div>
         )}
 
@@ -677,6 +691,16 @@ function App() {
           one item at a time.
         </p>
 
+        <div className="medical-disclaimer-card" role="note">
+          <div className="medical-disclaimer-header">
+            <span className="medical-icon" aria-hidden="true">⚕️</span>
+            <strong>Not Medical Advice</strong>
+          </div>
+          <p>
+            MacroVerdict is an informational and educational tool based on public nutritional frameworks (AHA, ADA, FDA). It is <strong>not intended as clinical medical advice</strong>, diagnosis, or personalized dietary prescription. Always consult a qualified physician or registered dietitian for medical dietary decisions.
+          </p>
+        </div>
+
         <div className="community-card">
           <div className="community-card-header">
             <span className="community-badge">Community & Feedback</span>
@@ -721,6 +745,9 @@ function App() {
           <a href="https://github.com/mohammadr33/MacroVerdict" target="_blank" rel="noreferrer">Source on GitHub</a>
           {' · '}
           <a href="https://github.com/mohammadr33/MacroVerdict/discussions" target="_blank" rel="noreferrer">Discussions</a>
+        </p>
+        <p className="footer-disclaimer">
+          <strong>Medical Disclaimer:</strong> This application is for informational purposes only and does not provide medical or clinical advice. Consult a healthcare provider before making major changes to your diet.
         </p>
         <p className="footer-demo-note">
           A solo developer personal project. Verdicts are based on public health guidelines (AHA, ADA, FDA) and schemas may not be perfect. Have ideas or insights? Feel free to share in our <a href="https://github.com/mohammadr33/MacroVerdict/discussions" target="_blank" rel="noreferrer">GitHub Discussions</a>.

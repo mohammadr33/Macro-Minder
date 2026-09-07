@@ -112,6 +112,13 @@ Nutritional schemas and food databases are complex and evolving. If you notice a
 
 ## Known Limitations
 
+- **Free Tier Cold Starts**: On Render's free tier, the web service spins down when idle. The initial request after inactivity may take ~30 seconds to wake up.
 - No portion-size distinction (snack vs. meal vs. ingredient) — calorie-based rules assume snack-sized serving
 - A few thresholds (Cutting/Muscle Building calorie limits, Diabetes sugar bonus) are reasoned heuristics, not backed by an official body — flagged in `goals.py`
 - SQLite history resets on Render redeploys (ephemeral filesystem on free tier)
+
+---
+
+## Medical Disclaimer
+
+MacroVerdict is designed solely for informational and educational purposes based on public health frameworks (AHA, ADA, FDA). **It does not provide medical, diagnostic, or clinical dietary advice.** Nutritional needs differ significantly based on individual health conditions; always consult a licensed physician or registered dietitian before making significant dietary changes.
