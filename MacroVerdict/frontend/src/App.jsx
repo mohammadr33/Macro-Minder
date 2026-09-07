@@ -261,10 +261,10 @@ function App() {
   return (
     <div className="page">
       <header className="topbar">
-        <span className="brand">MacroMinder</span>
+        <span className="brand">MacroVerdict</span>
         <a
           className="repo-link"
-          href="https://github.com/mohammadr33/Macro-Minder"
+          href="https://github.com/mohammadr33/MacroVerdict"
           target="_blank"
           rel="noreferrer"
         >
@@ -528,7 +528,7 @@ function App() {
                   </div>
                   {tip && (
                     <span className={`tip-badge ${tip.is_ai_generated ? 'badge-ai' : 'badge-fallback'}`}>
-                      {tip.source_model || (tip.is_ai_generated ? 'MacroMinder AI' : 'Rule Synthesizer')}
+                      {tip.source_model || (tip.is_ai_generated ? 'MacroVerdict AI' : 'Rule Synthesizer')}
                     </span>
                   )}
                 </div>
@@ -670,7 +670,7 @@ function App() {
         <h2>Why this exists</h2>
         <p className="purpose-text">
           Nutrition labels give you numbers. They don't tell you whether
-          those numbers matter for your specific goal. MacroMinder is built
+          those numbers matter for your specific goal. MacroVerdict is built
           for the moment you're standing in a store aisle or looking in the
           fridge, deciding whether something actually fits what you're
           trying to do — not a full meal planner, just a straight answer on
@@ -680,7 +680,7 @@ function App() {
         <div className="community-card">
           <div className="community-card-header">
             <span className="community-badge">Community & Feedback</span>
-            <h2>Help Shape MacroMinder</h2>
+            <h2>Help Shape MacroVerdict</h2>
           </div>
           <p className="community-description">
             Nutritional science and grocery databases are vast and complex. While our rules are modeled on established public health guidelines (AHA, ADA, FDA), <strong>the schema and threshold logic may not be perfect</strong> for every single food item or dietary need.
@@ -703,7 +703,7 @@ function App() {
           </div>
           <div className="community-cta">
             <a
-              href="https://github.com/mohammadr33/Macro-Minder/discussions"
+              href="https://github.com/mohammadr33/MacroVerdict/discussions"
               target="_blank"
               rel="noreferrer"
               className="community-btn-primary"
@@ -718,12 +718,12 @@ function App() {
       <footer className="footer">
         <p>
           Built with Python · FastAPI · React · Gemini AI ·{' '}
-          <a href="https://github.com/mohammadr33/Macro-Minder" target="_blank" rel="noreferrer">Source on GitHub</a>
+          <a href="https://github.com/mohammadr33/MacroVerdict" target="_blank" rel="noreferrer">Source on GitHub</a>
           {' · '}
-          <a href="https://github.com/mohammadr33/Macro-Minder/discussions" target="_blank" rel="noreferrer">Discussions</a>
+          <a href="https://github.com/mohammadr33/MacroVerdict/discussions" target="_blank" rel="noreferrer">Discussions</a>
         </p>
         <p className="footer-demo-note">
-          A solo developer personal project. Verdicts are based on public health guidelines (AHA, ADA, FDA) and schemas may not be perfect. Have ideas or insights? Feel free to share in our <a href="https://github.com/mohammadr33/Macro-Minder/discussions" target="_blank" rel="noreferrer">GitHub Discussions</a>.
+          A solo developer personal project. Verdicts are based on public health guidelines (AHA, ADA, FDA) and schemas may not be perfect. Have ideas or insights? Feel free to share in our <a href="https://github.com/mohammadr33/MacroVerdict/discussions" target="_blank" rel="noreferrer">GitHub Discussions</a>.
         </p>
       </footer>
     </div>

@@ -1,8 +1,8 @@
-# Macro Minder
+# MacroVerdict
 
-**A full-stack nutrition analysis tool** that tells you whether a food fits your specific health goal — and explains *why*, with a confidence level and AI-generated tips. Not a yes/no. A verdict with reasoning.
+**A smart food & nutrition decision engine** that evaluates whether a food fits your specific health goals — and explains *why*, with granular rule breakdowns, confidence levels, and grounded AI insights. Not just a yes or no. An evidence-based verdict with complete transparency.
 
-🌐 **[Live Demo](https://macro-minder.vercel.app)** <!-- update with real URL after deploy -->
+🌐 **[Live Demo](https://macro-verdict.vercel.app)** <!-- update with real URL after deploy -->
 
 ---
 
@@ -12,8 +12,8 @@
 - 📷 **Barcode scanner** — scan any UPC/EAN barcode with your camera or upload a photo; product data pulled from Open Food Facts
 - 🎯 **Multi-goal stacking** — check a food against multiple health goals simultaneously (e.g. High Cholesterol + Blood Pressure at once)
 - 🧠 **Rule engine** — calibrated against AHA, ADA, and FDA guidelines; rules carry a *role* (blocking / moderation / bonus) so the verdict reflects real clinical nuance
-- 💡 **AI tips** — Gemini-powered contextual suggestions based on the specific verdict and failed rules
-- 📊 **History** — every lookup is logged for review
+- 💡 **AI tips** — Gemini-powered contextual suggestions grounded in the specific verdict and nutrient thresholds
+- 📊 **History** — food and goal evaluation logs
 
 ### Supported Health Goals
 
@@ -31,7 +31,7 @@
 
 1. **Ingestion** (`fetcher.py`) — pulls live data from [USDA FoodData Central](https://fdc.nal.usda.gov/) (name search) and [Open Food Facts](https://world.openfoodfacts.org/) (barcode lookup). Results are cached in SQLite to avoid repeat API calls.
 
-2. **Normalization** (`normalize.py`) — reconciles both APIs' differing units, field names, and reporting bases into one consistent `Food` schema (per-100g, with explicit handling of missing data — never silently treated as zero).
+2. **Normalization** (`normalize.py`) — reconciles differing units, field names, and reporting bases into one consistent `Food` schema (per-100g, with explicit handling of missing data — never silently treated as zero).
 
 3. **Rule engine** (`goal.py`, `goals.py`) — each goal is a set of rules with a *role*:
    - **Blocking** — must pass, or the verdict is `AVOID`
@@ -67,7 +67,7 @@
 ### Backend
 
 ```bash
-cd Macro_Minder
+cd MacroVerdict
 pip install -r requirements.txt
 ```
 
@@ -89,7 +89,7 @@ uvicorn api:app --reload
 ### Frontend
 
 ```bash
-cd Macro_Minder/frontend
+cd MacroVerdict/frontend
 npm install
 npm run dev
 # App running at http://localhost:5173
@@ -100,7 +100,13 @@ npm run dev
 ## Deployment
 
 - **Backend** → [Render](https://render.com) — `render.yaml` is included; set `USDA_API_KEY` and `GEMINI_API_KEY` in the Render dashboard
-- **Frontend** → [Vercel](https://vercel.com) — set root directory to `Macro_Minder/frontend` and add `VITE_API_BASE=https://<your-render-url>/api`
+- **Frontend** → [Vercel](https://vercel.com) — set root directory to `MacroVerdict/frontend` and add `VITE_API_BASE=https://<your-render-url>/api`
+
+---
+
+## Community & Discussions
+
+Nutritional schemas and food databases are complex and evolving. If you notice a threshold that should be refined or want to suggest new features, join our [GitHub Discussions](https://github.com/mohammadr33/MacroVerdict/discussions).
 
 ---
 

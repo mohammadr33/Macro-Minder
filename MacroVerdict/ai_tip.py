@@ -1,5 +1,5 @@
 """
-Grounded AI Contextual Tip Engine for MacroMinder.
+Grounded AI Contextual Tip Engine for MacroVerdict.
 
 ANTI-THIN-WRAPPER DESIGN:
 This engine takes the deterministic outputs of the rule engine (exact nutrients,
@@ -112,7 +112,7 @@ def _build_deterministic_tip(
         takeaway=takeaway_str,
         suggested_swap=swap_str,
         is_ai_generated=False,
-        source_model="MacroMinder Rule Synthesizer (Offline Fallback)",
+        source_model="MacroVerdict Rule Synthesizer (Offline Fallback)",
     )
 
 
@@ -154,7 +154,7 @@ def generate_contextual_tip(
     ] or ["None"]
 
     newline = "\n"
-    prompt = f"""You are MacroMinder's Grounded Nutrition Synthesizer.
+    prompt = f"""You are MacroVerdict's Grounded Nutrition Synthesizer.
 Analyze this single evaluated food item against the user's specific health goals.
 STRICT ANTI-HALLUCINATION RULES:
 1. Do NOT invent, recalculate, or guess any nutrient numbers. Use ONLY the data provided below.
@@ -223,7 +223,7 @@ Respond ONLY with a valid JSON object matching this exact structure:
             payload = {
                 "model": "gpt-4o-mini",
                 "messages": [
-                    {"role": "system", "content": "You are MacroMinder's Grounded Nutrition Synthesizer. Return only valid JSON."},
+                    {"role": "system", "content": "You are MacroVerdict's Grounded Nutrition Synthesizer. Return only valid JSON."},
                     {"role": "user", "content": prompt},
                 ],
                 "response_format": {"type": "json_object"},

@@ -22,20 +22,21 @@ from goal import combine_results
 from normalize import Food
 from ai_tip import generate_contextual_tip, TipResponse
 
-app = FastAPI(title="MacroMinder API")
+app = FastAPI(title="MacroVerdict API")
 
-# Allow a local React dev server to call this API. Tighten this before
-# any real deployment -- wide open CORS is fine for local dev only.
+# Allow local React dev server and Vercel deployments to call this API.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
-        # Vercel production + preview deployments
+        # Vercel production + preview deployments (new and legacy fallback)
+        "https://macro-verdict.vercel.app",
+        "https://macroverdict.vercel.app",
         "https://macro-minder.vercel.app",
         "https://macro-minder-mohammadr33.vercel.app",
     ],
-    allow_origin_regex=r"https://macro-minder.*\.vercel\.app",
+    allow_origin_regex=r"https://(macro-verdict|macroverdict|macro-minder).*\.vercel\.app",
     allow_methods=["*"],
     allow_headers=["*"],
 )

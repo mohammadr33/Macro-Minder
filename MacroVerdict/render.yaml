@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: macro-minder-api
+    name: macro-verdict-api
     runtime: python
     region: ohio
     plan: free
