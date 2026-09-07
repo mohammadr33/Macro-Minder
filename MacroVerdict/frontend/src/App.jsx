@@ -16,6 +16,26 @@ class ScannerErrorBoundary extends Component {
   }
   render() {
     if (this.state.hasError) {
+      if (this.props.isInline) {
+        return (
+          <div className="scanner-embedded-wrapper">
+            <div className="scanner-embedded-card" style={{ padding: '24px 20px', textAlign: 'center' }}>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#fff' }}>Camera Unavailable</h3>
+              <p style={{ color: '#ff9b9b', fontSize: '13.5px', marginBottom: '16px' }}>
+                Your device or browser encountered an issue accessing the camera stream.
+              </p>
+              <button
+                type="button"
+                className="scanner-cancel-btn"
+                style={{ width: '100%', minHeight: '44px' }}
+                onClick={this.props.onClose}
+              >
+                Enter Barcode Manually Below
+              </button>
+            </div>
+          </div>
+        )
+      }
       return (
         <div className="scanner-modal-backdrop" role="dialog" onClick={this.props.onClose}>
           <div className="scanner-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -160,7 +180,7 @@ function App() {
   const [searchPage, setSearchPage] = useState(1)
   const [hasMoreResults, setHasMoreResults] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [isScannerOpen, setIsScannerOpen] = useState(false)
+  const [isCameraActive, setIsCameraActive] = useState(true)
 
   useEffect(() => {
     fetch(`${API_BASE}/goals`)
@@ -179,7 +199,6 @@ function App() {
     setSearchPage(1)
     setHasMoreResults(false)
     setLoadingMore(false)
-    setIsScannerOpen(false)
     setError('')
   }
 
@@ -336,6 +355,7 @@ function App() {
             className={mode === 'name' ? 'active' : ''}
             onClick={() => {
               setMode('name')
+              setIsCameraActive(false)
               reset()
             }}
           >
@@ -347,6 +367,7 @@ function App() {
             className={mode === 'barcode' ? 'active' : ''}
             onClick={() => {
               setMode('barcode')
+              setIsCameraActive(true)
               reset()
             }}
           >
@@ -370,36 +391,51 @@ function App() {
           </div>
         ) : (
           <div className="barcode-input-section">
-            <div className="barcode-notice-card" role="note">
-              <div className="barcode-notice-header">
-                <span className="barcode-notice-badge">Camera Notice</span>
-                <span className="barcode-notice-sub">Autofocus issue (Work in progress)</span>
+            {isCameraActive ? (
+              <ScannerErrorBoundary isInline={true} onClose={() => setIsCameraActive(false)}>
+                <Suspense
+                  fallback={
+                    <div className="scanner-embedded-wrapper">
+                      <div className="scanner-embedded-card">
+                        <div className="scanner-status-overlay">
+                          <div className="scanner-spinner" />
+                          <p>Activating camera…</p>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                >
+                  <BarcodeScanner
+                    isInline={true}
+                    onScan={(scannedCode) => {
+                      setIsCameraActive(false)
+                      handleBarcodeLookup(scannedCode)
+                    }}
+                    onClose={() => setIsCameraActive(false)}
+                  />
+                </Suspense>
+              </ScannerErrorBoundary>
+            ) : (
+              <div className="barcode-camera-trigger">
+                <button
+                  type="button"
+                  className="camera-scan-btn"
+                  onClick={() => {
+                    setError('')
+                    setIsCameraActive(true)
+                  }}
+                >
+                  <span className="camera-btn-icon" aria-hidden="true">📷</span>
+                  <div className="camera-btn-text">
+                    <strong>Activate Camera Scanner</strong>
+                    <span>Scan UPC/EAN barcode directly with your device camera</span>
+                  </div>
+                </button>
               </div>
-              <p className="barcode-notice-text">
-                Live webcam and browser autofocus may struggle to focus cleanly on some barcodes. If your item isn't scanning, <strong>take a picture of the barcode with your phone</strong> and use the <strong>“Upload Barcode Photo”</strong> option inside the scanner, or type the barcode numbers directly below.
-              </p>
-            </div>
-
-            <div className="barcode-camera-trigger">
-              <button
-                type="button"
-                className="camera-scan-btn"
-                onClick={() => {
-                  setError('')
-                  setIsScannerOpen(true)
-                }}
-                disabled={loading}
-              >
-                <span className="camera-btn-icon" aria-hidden="true">📷</span>
-                <div className="camera-btn-text">
-                  <strong>Open Camera Scanner</strong>
-                  <span>Scan UPC/EAN barcode directly with your device camera</span>
-                </div>
-              </button>
-            </div>
+            )}
 
             <div className="barcode-divider">
-              <span>or enter barcode number</span>
+              <span>or enter barcode number manually</span>
             </div>
 
             <div className="search-row">
@@ -423,31 +459,6 @@ function App() {
             <span className="spinner-inline" />
             <span>Connecting to database… (If backend is waking up from idle, this may take ~30 seconds)</span>
           </div>
-        )}
-
-        {isScannerOpen && (
-          <ScannerErrorBoundary onClose={() => setIsScannerOpen(false)}>
-            <Suspense
-              fallback={
-                <div className="scanner-modal-backdrop">
-                  <div className="scanner-modal-card">
-                    <div className="scanner-status-overlay">
-                      <div className="scanner-spinner" />
-                      <p>Loading scanner module…</p>
-                    </div>
-                  </div>
-                </div>
-              }
-            >
-              <BarcodeScanner
-                onScan={(scannedCode) => {
-                  setIsScannerOpen(false)
-                  handleBarcodeLookup(scannedCode)
-                }}
-                onClose={() => setIsScannerOpen(false)}
-              />
-            </Suspense>
-          </ScannerErrorBoundary>
         )}
 
         {error && <p className="error-text" role="alert">{error}</p>}

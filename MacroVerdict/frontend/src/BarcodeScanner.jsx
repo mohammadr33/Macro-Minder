@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@zxing/library'
 
-export default function BarcodeScanner({ onScan, onClose }) {
+export default function BarcodeScanner({ onScan, onClose, isInline = false }) {
   const [error, setError] = useState(null)
   const [isStarting, setIsStarting] = useState(true)
   const [isFileScanning, setIsFileScanning] = useState(false)
@@ -455,14 +455,14 @@ export default function BarcodeScanner({ onScan, onClose }) {
   // ─── UI ───────────────────────────────────────────────────────────────────
   return (
     <div
-      className="scanner-modal-backdrop"
-      role="dialog"
-      aria-modal="true"
+      className={isInline ? 'scanner-embedded-wrapper' : 'scanner-modal-backdrop'}
+      role={isInline ? 'region' : 'dialog'}
+      aria-modal={isInline ? undefined : 'true'}
       aria-label="Scan food product barcode"
-      onClick={handleClose}
+      onClick={isInline ? undefined : handleClose}
     >
       <div
-        className="scanner-modal-card"
+        className={isInline ? 'scanner-embedded-card' : 'scanner-modal-card'}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="scanner-modal-header">
@@ -472,11 +472,12 @@ export default function BarcodeScanner({ onScan, onClose }) {
           </div>
           <button
             type="button"
-            className="scanner-close-btn"
+            className={`scanner-close-btn ${isInline ? 'scanner-inline-close-btn' : ''}`}
             onClick={handleClose}
-            aria-label="Close camera scanner"
+            aria-label={isInline ? 'Hide camera scanner' : 'Close camera scanner'}
+            title={isInline ? 'Hide camera & enter manually' : 'Close scanner'}
           >
-            ✕
+            {isInline ? '✕ Hide Camera' : '✕'}
           </button>
         </div>
 
@@ -647,13 +648,13 @@ export default function BarcodeScanner({ onScan, onClose }) {
               className="scanner-cancel-btn"
               onClick={handleClose}
             >
-              ✕ Exit
+              {isInline ? '✕ Hide Camera' : '✕ Exit'}
             </button>
           </div>
 
           <div className="scanner-tip-card">
             <div className="scanner-focus-alert">
-              💡 <strong>Close-up blur on Android?</strong> Hold phone <strong>8–10 in. away</strong> &amp; tap <strong>2x</strong> zoom above, or use <strong>Phone Camera App</strong> for native macro autofocus!
+              💡 <strong>Pro-tip:</strong> Tap screen to focus, tap <strong>2x</strong> zoom for close items, or use <strong>Phone Camera App</strong> for native macro autofocus!
             </div>
           </div>
         </div>
