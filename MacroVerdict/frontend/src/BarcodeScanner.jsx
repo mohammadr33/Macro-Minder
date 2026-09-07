@@ -62,6 +62,14 @@ export default function BarcodeScanner({ onScan, onClose }) {
   }
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handleClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
     let mounted = true
 
     async function startScanner() {
@@ -207,14 +215,27 @@ export default function BarcodeScanner({ onScan, onClose }) {
 
   // ─── UI ───────────────────────────────────────────────────────────────────
   return (
-    <div className="scanner-modal-backdrop" role="dialog" aria-modal="true" aria-label="Barcode Camera Scanner">
+    <div
+      className="scanner-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Barcode Camera Scanner"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose()
+      }}
+    >
       <div className="scanner-modal-card">
         <div className="scanner-modal-header">
           <div className="scanner-title-row">
             <span className="scanner-pulse-dot" aria-hidden="true" />
             <h3>Scan Product Barcode</h3>
           </div>
-          <button className="scanner-close-btn" onClick={handleClose} aria-label="Close camera scanner">
+          <button
+            type="button"
+            className="scanner-close-btn"
+            onClick={handleClose}
+            aria-label="Close camera scanner"
+          >
             ✕
           </button>
         </div>
@@ -226,7 +247,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
             className="scanner-video-el"
             muted
             playsInline
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: '12px' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
 
           {isStarting && (
@@ -264,20 +285,9 @@ export default function BarcodeScanner({ onScan, onClose }) {
         </div>
 
         <div className="scanner-modal-footer">
-          <div className="scanner-tip-card">
-            <div className="scanner-focus-alert">
-              ⚠️ <strong>Camera blurry?</strong> A known browser autofocus issue can affect some cameras. If it won't scan, snap a picture with your phone and use <strong>Upload Barcode Photo</strong> below!
-            </div>
-            <strong>💡 Quick Tips:</strong>
-            <ul>
-              <li><strong>Distance:</strong> Hold package <strong>8–10 inches away</strong> (too close blurs the lens).</li>
-              <li><strong>Lighting:</strong> Avoid bright glare across the barcode bars.</li>
-            </ul>
-          </div>
-
           {fileError && <p className="scanner-file-error" role="alert">{fileError}</p>}
 
-          <div className="scanner-actions-row">
+          <div className="scanner-actions-grid">
             <input
               type="file"
               ref={fileInputRef}
@@ -291,11 +301,25 @@ export default function BarcodeScanner({ onScan, onClose }) {
               onClick={() => fileInputRef.current?.click()}
               disabled={isFileScanning}
             >
-              📷 Upload Barcode Photo / Image
+              <span className="scanner-upload-icon" aria-hidden="true">📷</span>
+              <div className="scanner-upload-labels">
+                <strong>Upload / Take Photo</strong>
+                <span className="scanner-upload-hint">Uses native autofocus</span>
+              </div>
             </button>
-            <button type="button" className="ghost-btn scanner-cancel-action" onClick={handleClose}>
-              Enter Barcode Number Manually
+            <button
+              type="button"
+              className="scanner-cancel-btn"
+              onClick={handleClose}
+            >
+              ✕ Exit
             </button>
+          </div>
+
+          <div className="scanner-tip-card">
+            <div className="scanner-focus-alert">
+              ⚠️ <strong>Blurry live camera?</strong> Live browser autofocus can struggle on close objects. Hold the item <strong>8–10 inches away</strong> or tap <strong>Upload / Take Photo</strong> above!
+            </div>
           </div>
         </div>
       </div>
