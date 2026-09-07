@@ -11,6 +11,7 @@ export default function BarcodeScanner({ onScan, onClose }) {
   const [isStarting, setIsStarting] = useState(true)
   const [isFileScanning, setIsFileScanning] = useState(false)
   const [fileError, setFileError] = useState(null)
+  const [focusRing, setFocusRing] = useState(null)
 
   const videoRef = useRef(null)
   const readerRef = useRef(null)
@@ -59,6 +60,66 @@ export default function BarcodeScanner({ onScan, onClose }) {
     isHandlingScanRef.current = true
     stopCamera()
     onScan(text)
+  }
+
+  const handleViewportClick = (e) => {
+    try {
+      const rect = e.currentTarget?.getBoundingClientRect()
+      if (!rect) return
+
+      const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : null)
+      const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : null)
+
+      const x = typeof clientX === 'number' && !Number.isNaN(clientX) ? clientX - rect.left : rect.width / 2
+      const y = typeof clientY === 'number' && !Number.isNaN(clientY) ? clientY - rect.top : rect.height / 2
+
+      const tapId = Date.now()
+      setFocusRing({ x, y, id: tapId })
+      setTimeout(() => {
+        setFocusRing((curr) => (curr?.id === tapId ? null : curr))
+      }, 1200)
+
+      // Hardware camera autofocus adjustment (strictly guarded)
+      const stream = videoRef.current?.srcObject
+      if (stream && typeof stream.getVideoTracks === 'function') {
+        const tracks = stream.getVideoTracks()
+        if (tracks && tracks.length > 0) {
+          const track = tracks[0]
+          if (track && track.readyState === 'live' && typeof track.applyConstraints === 'function') {
+            const caps = typeof track.getCapabilities === 'function' ? track.getCapabilities() : {}
+            const advanced = {}
+
+            if (caps.focusMode && Array.isArray(caps.focusMode)) {
+              if (caps.focusMode.includes('single-shot')) {
+                advanced.focusMode = 'single-shot'
+              } else if (caps.focusMode.includes('continuous')) {
+                advanced.focusMode = 'continuous'
+              }
+            }
+
+            if (caps.pointsOfInterest) {
+              const relX = Math.max(0, Math.min(1, x / rect.width))
+              const relY = Math.max(0, Math.min(1, y / rect.height))
+              advanced.pointsOfInterest = [{ x: relX, y: relY }]
+            }
+
+            if (Object.keys(advanced).length > 0) {
+              track.applyConstraints({ advanced: [advanced] })
+                .then(() => {
+                  if (advanced.focusMode === 'single-shot' && caps.focusMode.includes('continuous')) {
+                    setTimeout(() => {
+                      try {
+                        track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {})
+                      } catch {}
+                    }, 800)
+                  }
+                })
+                .catch(() => {})
+            }
+          }
+        }
+      }
+    } catch {}
   }
 
   useEffect(() => {
@@ -240,7 +301,12 @@ export default function BarcodeScanner({ onScan, onClose }) {
           </button>
         </div>
 
-        <div className="scanner-viewport-wrapper">
+        <div
+          className="scanner-viewport-wrapper"
+          onClick={handleViewportClick}
+          style={{ cursor: 'crosshair' }}
+          title="Tap screen to focus"
+        >
           {/* @zxing/browser drives this <video> element directly */}
           <video
             ref={videoRef}
@@ -249,6 +315,27 @@ export default function BarcodeScanner({ onScan, onClose }) {
             playsInline
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
+
+          {/* Animated Tap-to-Focus Target Box */}
+          {focusRing && (
+            <div
+              className="scanner-focus-ring"
+              style={{ left: `${focusRing.x}px`, top: `${focusRing.y}px` }}
+              aria-hidden="true"
+            >
+              <div className="focus-ring-bracket tl" />
+              <div className="focus-ring-bracket tr" />
+              <div className="focus-ring-bracket bl" />
+              <div className="focus-ring-bracket br" />
+            </div>
+          )}
+
+          {/* Tap-to-focus helper hint */}
+          {!isStarting && !error && !isFileScanning && (
+            <div className="scanner-tap-hint" aria-hidden="true">
+              <span>👆 Tap screen to focus</span>
+            </div>
+          )}
 
           {isStarting && (
             <div className="scanner-status-overlay">

@@ -1,7 +1,48 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense, Component } from 'react'
 
 const BarcodeScanner = lazy(() => import('./BarcodeScanner'))
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000/api'
+
+class ScannerErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  componentDidCatch(error, info) {
+    console.error('BarcodeScanner error caught by boundary:', error, info)
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="scanner-modal-backdrop" role="dialog" onClick={this.props.onClose}>
+          <div className="scanner-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="scanner-modal-header">
+              <h3 style={{ margin: 0, fontSize: '15px', color: '#fff' }}>Camera Unavailable</h3>
+              <button type="button" className="scanner-close-btn" onClick={this.props.onClose}>✕</button>
+            </div>
+            <div style={{ padding: '24px 20px', textAlign: 'center' }}>
+              <p style={{ color: '#ff9b9b', fontSize: '13.5px', marginBottom: '16px' }}>
+                Your device or browser encountered an issue accessing the camera stream.
+              </p>
+              <button
+                type="button"
+                className="scanner-cancel-btn"
+                style={{ width: '100%', minHeight: '44px' }}
+                onClick={this.props.onClose}
+              >
+                Close & Enter Barcode Manually
+              </button>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 const TIER_LABELS = {
   avoid: 'Avoid',
@@ -385,26 +426,28 @@ function App() {
         )}
 
         {isScannerOpen && (
-          <Suspense
-            fallback={
-              <div className="scanner-modal-backdrop">
-                <div className="scanner-modal-card">
-                  <div className="scanner-status-overlay">
-                    <div className="scanner-spinner" />
-                    <p>Loading scanner module…</p>
+          <ScannerErrorBoundary onClose={() => setIsScannerOpen(false)}>
+            <Suspense
+              fallback={
+                <div className="scanner-modal-backdrop">
+                  <div className="scanner-modal-card">
+                    <div className="scanner-status-overlay">
+                      <div className="scanner-spinner" />
+                      <p>Loading scanner module…</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            }
-          >
-            <BarcodeScanner
-              onScan={(scannedCode) => {
-                setIsScannerOpen(false)
-                handleBarcodeLookup(scannedCode)
-              }}
-              onClose={() => setIsScannerOpen(false)}
-            />
-          </Suspense>
+              }
+            >
+              <BarcodeScanner
+                onScan={(scannedCode) => {
+                  setIsScannerOpen(false)
+                  handleBarcodeLookup(scannedCode)
+                }}
+                onClose={() => setIsScannerOpen(false)}
+              />
+            </Suspense>
+          </ScannerErrorBoundary>
         )}
 
         {error && <p className="error-text" role="alert">{error}</p>}
